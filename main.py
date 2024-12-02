@@ -1,39 +1,100 @@
-from fastapi import FastAPI, Header
-from typing import Optional
+from fastapi import FastAPI, status
+from fastapi.exceptions import HTTPException
 from pydantic import BaseModel
+from typing import List
 
-app = FastAPI()
+app= FastAPI()
 
-@app.get("/")
-async def read_root():
-    return {"message":"Hello World"}
-
-@app.get('/greet')
-async def greet_name(name:Optional[str]="User",age: int=0)-> dict:
-    return {"message":f"Hello {name}","age":age}
-
-class BookCreateModel(BaseModel):
-    title: str
-    author: str
-
-@app.post("/create_book")
-async def create_book(book_data: BookCreateModel):
-    return {
-        "title": book_data.title,
-        "author": book_data.author
-    }
-
-@app.get('/get_headers', status_code=201)
-async def get_headers(accept:str=Header(None),
-                      content_type:str=Header(None),
-                      user_agent:str=Header(None),
-                      host:str=Header(None)): 
+books=[
+    {"id":1,
+     "title":"Think Python",
+     "author":"Allen B. Downey",
+     "publisher":"O'Reilly Media",
+     "pulished_date":"2015-11-22",
+     "page_count":1234,
+     "language":"English",
+    },
+    {
+    "id":2,
+     "title":"Django y Example",
+     "author":"Antonio Molina",
+     "publisher":"Packt Published ltd",
+     "pulished_date":"2022-11-12",
+     "page_count":1250,
+     "language":"English",
+    },
+    {
+    "id":3,
+     "title":"The web socket handbook",
+     "author":"Alex Diaconu",
+     "publisher":"Xinyu Wang",
+     "pulished_date":"2012-01-01",
+     "page_count":1034,
+     "language":"English",
+    },
+    {
+    "id":4,
+     "title":"Head first JavaScript",
+     "author":"Hellen Smith",
+     "publisher":"Oreilly Media",
+     "pulished_date":"2021-01-01",
+     "page_count":234,
+     "language":"English",
+    },
+    {
+    "id":5,
+     "title":"Algorithms and Data Structure in Python",
+     "author":"Kent Lee",
+     "publisher":"Springer .Inc",
+     "pulished_date":"2022-01-01",
+     "page_count":9034,
+     "language":"English",
+    },
+    {
+    "id":6,
+     "title":"Head First HTML5 Programming",
+     "author":"Eric T Freeman",
+     "publisher":"O'Reilly Media",
+     "pulished_date":"2011-21-01",
+     "page_count":3001,
+     "language":"English",
+    },
     
-    request_headers = {}
+]
 
-    request_headers['Accept'] = accept
-    request_headers['Content-Type'] = content_type
-    request_headers['User-Agent'] = user_agent
-    request_headers['Host'] = host
-    
-    return request_headers
+class Book(BaseModel):
+     id:int
+     title:str
+     author:str
+     publisher:str
+     pulished_date:str
+     page_count:int
+     language:str
+@app.get('/books',response_model=List[Book])
+async def get_all_books():  
+    return books
+
+@app.post('/books',status_code=status.HTTP_201_CREATED)
+async def create_a_book(book_data:Book)-> dict:
+    new_book=book_data.model_dump()
+
+    books.append(new_book)
+
+    return new_book
+
+@app.get('/books/{book_id}')
+async def get_book(book_id:int)-> dict:
+    for book in books:
+        if book['id']==book_id:
+            return book
+    raise HTTPException(
+        Status_code=status.HTTP_404_NOT_FOUND,
+        detail="book not found"
+        )
+@app.put('/books/{book_id}')
+async def update_book(book_id:int)-> dict:
+    pass
+
+@app.delete('/books/{book_id}') 
+async def delete_book(book_id:int)-> dict:
+    pass
