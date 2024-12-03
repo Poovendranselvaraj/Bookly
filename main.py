@@ -96,7 +96,7 @@ async def get_book(book_id:int)-> dict:
         if book['id']==book_id:
             return book
     raise HTTPException(
-        Status_code=status.HTTP_404_NOT_FOUND,
+        status_code=status.HTTP_404_NOT_FOUND,
         detail="book not found"
         )
 @app.patch('/books/{book_id}')
@@ -113,6 +113,12 @@ async def update_book(book_id:int,book_update_data:BookUpdateModel)-> dict:
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Book not found")
 
-@app.delete('/books/{book_id}') 
-async def delete_book(book_id:int)-> dict:
-    pass
+@app.delete('/books/{book_id}',status_code=status.HTTP_204_NO_CONTENT) 
+async def delete_book(book_id:int):
+    for book in books:
+        if book["id"]==book_id:
+            books.remove(book)
+
+            return {}
+
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Book not found")
